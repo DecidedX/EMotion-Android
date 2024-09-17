@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:ignore="MissingDefaultResource">
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/leftConGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="buttonUp,buttonRight,buttonDown,buttonLeft,buttonView" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/rightConGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:constraint_referenced_ids="buttonA,buttonB,buttonX,buttonY,buttonMenu" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/lockScreenGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:constraint_referenced_ids="lockScreen, unlockScreen" />
+
+
+    <View
+        android:id="@+id/touchpad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <ImageButton
+        android:id="@+id/buttonA"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/rounded_button_ripple"
+        android:rotationX="0"
+        android:rotationY="0"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toTopOf="@+id/guidelineRockerBottom"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/buttonX"
+        app:layout_constraintHeight_percent="0.18"
+        app:srcCompat="@drawable/button_a"
+        android:tag="11" />
+
+    <ImageButton
+        android:id="@+id/buttonB"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/rounded_button_ripple"
+        android:rotationX="0"
+        android:rotationY="0"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toTopOf="@+id/buttonA"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/buttonA"
+        app:layout_constraintHeight_percent="0.18"
+        app:srcCompat="@drawable/button_b"
+        android:tag="12" />
+
+    <ImageButton
+        android:id="@+id/buttonX"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="70dp"
+        android:background="@drawable/rounded_button_ripple"
+        android:rotationX="0"
+        android:rotationY="0"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toTopOf="@+id/buttonA"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.18"
+        app:srcCompat="@drawable/button_x"
+        android:tag="10" />
+
+    <ImageButton
+        android:id="@+id/buttonY"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/rounded_button_ripple"
+        android:rotationX="0"
+        android:rotationY="0"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toTopOf="@+id/buttonX"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/buttonX"
+        app:layout_constraintHeight_percent="0.18"
+        app:srcCompat="@drawable/button_y"
+        android:tag="13" />
+
+    <ImageButton
+        android:id="@+id/buttonUp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/rounded_button_ripple"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toTopOf="@+id/buttonRight"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/buttonRight"
+        app:layout_constraintHeight_percent="0.18"
+        app:srcCompat="@drawable/button_up"
+        android:tag="8" />
+
+    <ImageButton
+        android:id="@+id/buttonLeft"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/rounded_button_ripple"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toTopOf="@+id/buttonDown"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/buttonDown"
+        app:layout_constraintHeight_percent="0.18"
+        app:srcCompat="@drawable/button_left"
+        android:tag="9" />
+
+    <ImageButton
+        android:id="@+id/buttonDown"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/rounded_button_ripple"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toTopOf="@+id/guidelineRockerBottom"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/buttonRight"
+        app:layout_constraintHeight_percent="0.18"
+        app:srcCompat="@drawable/button_down"
+        android:tag="6" />
+
+    <ImageButton
+        android:id="@+id/buttonRight"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="70dp"
+        android:background="@drawable/rounded_button_ripple"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toTopOf="@+id/buttonDown"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.18"
+        app:srcCompat="@drawable/button_right"
+        android:tag="7" />
+
+    <top.decided.emotion.widget.Rocker
+        android:id="@+id/rocker"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/guidelineRockerBottom"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintHeight_percent="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageButton
+        android:id="@+id/buttonRB"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/rounded_rectangle_button_ripple"
+        android:scaleType="centerCrop"
+        app:layout_constraintDimensionRatio="2:1"
+        app:layout_constraintEnd_toEndOf="@+id/buttonMenu"
+        app:layout_constraintHeight_percent="0.12"
+        app:layout_constraintTop_toTopOf="@+id/guidelineShoulderTop"
+        app:srcCompat="@drawable/button_rb"
+        android:tag="14" />
+
+    <ImageButton
+        android:id="@+id/buttonLB"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/rounded_rectangle_button_ripple"
+        android:scaleType="centerCrop"
+        app:layout_constraintDimensionRatio="2:1"
+        app:layout_constraintHeight_percent="0.12"
+        app:layout_constraintStart_toStartOf="@+id/buttonView"
+        app:layout_constraintTop_toTopOf="@+id/guidelineShoulderTop"
+        app:srcCompat="@drawable/button_lb"
+        android:tag="15" />
+
+    <ImageButton
+        android:id="@+id/buttonSetting"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:background="@drawable/semicircle_button_ripple"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/button_setting" />
+
+    <ImageButton
+        android:id="@+id/buttonView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="60dp"
+        android:background="@drawable/rounded_button_ripple"
+        android:scaleType="centerCrop"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintHeight_percent="0.18"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guidelineButtonTop"
+        app:srcCompat="@drawable/button_minus"
+        android:tag="1" />
+
+    <ImageButton
+        android:id="@+id/buttonMenu"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="70dp"
+        android:background="@drawable/rounded_button_ripple"
+        android:scaleType="centerCrop"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.18"
+        app:layout_constraintTop_toTopOf="@+id/guidelineButtonTop"
+        app:srcCompat="@drawable/button_plus"
+        android:tag="0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineButtonTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.04" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineShoulderTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.27" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineCentre"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.47" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineRockerBottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.97" />
+
+    <View
+        android:id="@+id/lockScreen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <ImageButton
+        android:id="@+id/unlockScreen"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:scaleType="centerCrop"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintHeight_percent="0.12"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonSetting"
+        app:srcCompat="@drawable/lock" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
