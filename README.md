@@ -1,5 +1,5 @@
 # EMotion-Android
-手机模拟手柄的Android手机端，需搭配[EMotion-Desktop](https://github.com/DecidedX/EMotion-Desktop/releases)使用
+手机模拟手柄的Android手机端，需搭配[EMotion-Desktop](https://github.com/DecidedX/EMotion-Desktop)使用
 ***
 ## Usage
 1. 在 Android 手机上安装[Releases](https://github.com/DecidedX/EMotion-Android/releases)中最新版本
