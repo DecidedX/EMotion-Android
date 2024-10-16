@@ -67,7 +67,7 @@ public class Config {
 
     public static void setTouchpadSwitch(boolean touchpadSwitch) {
         Config.touchpadSwitch = touchpadSwitch;
-        editor.putBoolean("touchpadSwitch", abxySwitch);
+        editor.putBoolean("touchpadSwitch", touchpadSwitch);
         editor.apply();
     }
 

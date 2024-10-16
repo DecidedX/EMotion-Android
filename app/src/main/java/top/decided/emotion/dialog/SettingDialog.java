@@ -98,12 +98,10 @@ public class SettingDialog extends Dialog {
 
         gyroDirectionGroup.setOnCheckedChangeListener((group, checkedId) -> {
             RadioButton direction = findViewById(checkedId);
-            Config.setGyroDirection((byte) direction.getTag());
+            Config.setGyroDirection(Byte.parseByte((String) direction.getTag()));
         });
 
-        findViewById(R.id.donateButton).setOnClickListener(view -> {
-            new DonateDialog(context).show();
-        });
+        findViewById(R.id.donateButton).setOnClickListener(view -> new DonateDialog(context).show());
 
         initLayoutSelector();
     }
@@ -114,10 +112,11 @@ public class SettingDialog extends Dialog {
         initIpSelector();
         initLayoutSelector();
         serviceSwitch.setChecked(Service.getServiceStatus());
-        abxySwitch.setChecked(sharedPreferences.getBoolean("abxySwitch", true));
-        vibration.setChecked(sharedPreferences.getBoolean("vibration", true));
-        buttonVibration.setChecked(sharedPreferences.getBoolean("buttonVibration", true));
-        adjustCustomLayoutSetting(sharedPreferences.getInt("currentLayout", 0));
+        abxySwitch.setChecked(Config.isAbxySwitch());
+        vibration.setChecked(Config.isVibration());
+        buttonVibration.setChecked(Config.isButtonVibration());
+        touchpadSwitch.setChecked(Config.isTouchpadSwitch());
+        adjustCustomLayoutSetting(Config.getCurrentLayout());
         useCutoutSwitch.setChecked(Config.isUseCutout());
         useCutoutContainer.setVisibility(Config.isCutout() ? View.VISIBLE : View.GONE);
     }

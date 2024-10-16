@@ -17,7 +17,7 @@ public class TouchPadTouchListener implements View.OnTouchListener {
                     controller.updateTouch(true,true);
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    controller.updateTouch(true, (short) (motionEvent.getX()/2310 * 1920), (short) (motionEvent.getY()/1080 * 943));
+                    controller.updateTouch(true, (short) (motionEvent.getX()/ view.getWidth() * 1920), (short) (motionEvent.getY()/ view.getHeight() * 943));
                     break;
                 case MotionEvent.ACTION_UP:
                     controller.updateTouch(true,false);
