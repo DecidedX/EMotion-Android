@@ -59,6 +59,7 @@ public class BaseConFragment extends Fragment {
         init();
     }
 
+
     @SuppressLint("ClickableViewAccessibility")
     void init(){
         setting.setOnClickListener(view -> settingDialog.show());
@@ -82,6 +83,8 @@ public class BaseConFragment extends Fragment {
         menu.setOnTouchListener(ControllerButtonTouchListener.getInstance());
     }
 
-
+    public void lockScreen(boolean lock){
+        lockScreen.setVisibility(lock ? View.VISIBLE : View.INVISIBLE);
+    }
 
 }

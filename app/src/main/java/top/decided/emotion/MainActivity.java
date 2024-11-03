@@ -40,6 +40,7 @@ import top.decided.emotion.fragment.BaseConFragment;
 import top.decided.emotion.fragment.CustomConFragment;
 import top.decided.emotion.fragment.FullConFragment;
 import top.decided.emotion.fragment.NSConFragment;
+import top.decided.emotion.listener.FullConRockerTouchListener;
 import top.decided.emotion.service.Service;
 import top.decided.emotion.widget.LayoutContainer;
 
@@ -178,13 +179,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         switch (layout){
             case 0:
             case 1:
-                conFragment = new NSConFragment(controller, settingDialog, layout == 0);
+                conFragment = NSConFragment.newInstance(controller, settingDialog, layout == 0);
                 break;
             case 2:
-                conFragment = new FullConFragment(controller, settingDialog);
+                conFragment = FullConFragment.newInstance(controller, settingDialog);
                 break;
             default:
-                conFragment = new CustomConFragment(controller, settingDialog);
+                conFragment = CustomConFragment.newInstance(controller, settingDialog, layout);
                 break;
         }
         switchConLayout();
@@ -193,86 +194,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void switchConLayout(){
         FragmentManager fgm = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fgm.beginTransaction();
-        fragmentTransaction.replace(R.id.layoutContainer,conFragment);
+        fragmentTransaction.replace(R.id.layoutFragmentViewer,conFragment);
         fragmentTransaction.commit();
-    }
-
-//    private void setConLayout(int layout){
-//        layoutContainer = findViewById(R.id.layoutContainer);
-//        layoutContainer.removeAllViews();
-//        if (layout < 2){
-//            getLayoutInflater().inflate(R.layout.ns_con, layoutContainer, true);
-//        }else if (layout == 2){
-//            getLayoutInflater().inflate(R.layout.full_con, layoutContainer, true);
-//        }else {
-//            getLayoutInflater().inflate(R.layout.custom_con, layoutContainer, true);
-//        }
-//    }
-
-//    @SuppressLint("ClickableViewAccessibility")
-//    private void initLayout(int layout){
-//        setConLayout(layout);
-////        gamePad = new GamePad(this, layout);
-//
-////        setting = findViewById(R.id.buttonSetting);
-////        lockScreen = findViewById(R.id.lockScreenGroup);
-////        unlockScreen = findViewById(R.id.unlockScreen);
-//
-//        if (layout >= 2){
-//            if (layout >= 3){
-////                sizeSeekBar = findViewById(R.id.sizeSeekBar);
-////                sizeSeekBar.setEnabled(false);
-//
-//                findViewById(R.id.editSaveButton).setOnClickListener(view -> {
-//                    layoutContainer.clearSelect();
-//                    int currentLayout = Config.getCurrentLayout();
-//                    if(currentLayout == 3){
-//                        new InputDialog(this, handler).show();
-//                    }else {
-//                        setEditMode(false);
-//                        Config.modifyCustomLayoutData(getNowLayoutData(""),currentLayout);
-//                    }
-//                });
-//
-//                findViewById(R.id.editResetButton).setOnClickListener(view -> {
-//                    setCustomLayout(Config.getDefaultLayoutData());
-//                });
-//
-//                findViewById(R.id.editQuitButton).setOnClickListener(view -> {
-//                    setEditMode(false);
-//                    if (Config.getCurrentLayout() == 3) Config.setCurrentLayout(2);
-//                    initLayout(Config.getCurrentLayout());
-//                });
-//
-////                sizeSeekBar.setOnTouchListener((view, motionEvent) -> {
-////                    layoutContainer.resizeView((((AppCompatSeekBar) view).getProgress() - 50) * 0.002f);
-////                    return false;
-////                });
-//
-//                if (layout > 3) readCustomLayout(layout);
-//            }
-//        }
-//
-////        setting.setOnClickListener(view -> settingDialog.show());
-////        unlockScreen.setOnClickListener(view -> {
-////            pressedVibration(Config.isButtonVibration(), vibrator);
-////            lockScreen.setVisibility(View.INVISIBLE);
-////            settingDialog.resetLockScreen();
-////        });
-//    }
-
-    public static Handler getHandler(){
-        return handler;
-    }
-
-    public static void pressedVibration(boolean buttonVibration, Vibrator vibrator){
-        if (!buttonVibration)
-            return;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
-        }else {
-            vibrator.vibrate(VibrationEffect.createOneShot(1, 255));
-        }
     }
 
     private void switchSensor(boolean turnOn){
@@ -289,11 +212,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         int currentLayout = Config.getCurrentLayout();
         if (currentLayout < 2 && nextLayout < 2){
             ((NSConFragment) conFragment).switchLRCon(nextLayout == 0);
+        }else if (currentLayout >= 3 && nextLayout >= 3){
+            if (nextLayout == 3){
+                ((CustomConFragment) conFragment).setEditMode(true);
+            }
+            ((CustomConFragment) conFragment).setLayout(nextLayout);
         }else {
             initLayout(nextLayout);
-//            if (nextLayout == 3){
-//                setEditMode(true);
-//            }
         }
         Config.setCurrentLayout(nextLayout);
     }
@@ -303,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (abxySwitch == bool || Config.getCurrentLayout() < 2)
             return;
         Config.setAbxySwitch(bool);
-//        gamePad.abxySwitch();
+        ((FullConFragment) conFragment).abxySwitch();
     }
 
     private void startVibrate(long time, int amplitude){
@@ -318,6 +243,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         }else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         Config.setUseCutout(useCutout);
+    }
+
+    public static void pressedVibration(boolean buttonVibration, Vibrator vibrator){
+        if (!buttonVibration)
+            return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
+        }else {
+            vibrator.vibrate(VibrationEffect.createOneShot(1, 255));
+        }
+    }
+
+    public static Handler getHandler(){
+        return handler;
     }
 
     private static class MainActivityHandler extends Handler{
@@ -346,17 +285,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     mainActivityWeakReference.get().startVibrate(100, (int) msg.obj);
                     break;
                 case 4:
-                    boolean lock = (boolean) msg.obj;
-//                    mainActivityWeakReference.get().lockScreen.setVisibility(lock ? View.VISIBLE : View.INVISIBLE);
+                    mainActivityWeakReference.get().conFragment.lockScreen((boolean) msg.obj);
                     break;
                 case 5:
                     mainActivityWeakReference.get().expandToCutout((boolean)msg.obj);
                     break;
                 case 6:
-//                    mainActivityWeakReference.get().setEditMode((boolean) msg.obj);
+                    ((CustomConFragment) mainActivityWeakReference.get().conFragment).setEditMode((boolean) msg.obj);
                     break;
                 case 7:
-//                    mainActivityWeakReference.get().saveNewCustomLayout((String) msg.obj);
+                    ((CustomConFragment) mainActivityWeakReference.get().conFragment).saveNewCustomLayout((String) msg.obj);
                     break;
             }
         }

@@ -2,6 +2,7 @@ package top.decided.emotion.fragment;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +14,6 @@ import androidx.appcompat.widget.AppCompatSeekBar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import top.decided.emotion.MainActivity;
@@ -25,7 +25,6 @@ import top.decided.emotion.dialog.InputDialog;
 import top.decided.emotion.dialog.SettingDialog;
 import top.decided.emotion.widget.LayoutContainer;
 
-//TODO:联合布局编辑重构
 public class CustomConFragment extends FullConFragment{
 
     AppCompatSeekBar sizeSeekBar;
@@ -34,8 +33,11 @@ public class CustomConFragment extends FullConFragment{
 
     private LayoutContainer layoutContainer;
 
-    public CustomConFragment(Controller controller, SettingDialog settingDialog) {
+    private int layout;
+
+    public CustomConFragment(Controller controller, SettingDialog settingDialog, int layout) {
         super(controller, settingDialog);
+        this.layout = layout;
     }
 
     /**
@@ -46,8 +48,8 @@ public class CustomConFragment extends FullConFragment{
      * @param settingDialog Setting dialog page.
      * @return A new instance of fragment CustomConFragment.
      */
-    public static CustomConFragment newInstance(Controller controller, SettingDialog settingDialog) {
-        return new CustomConFragment(controller, settingDialog);
+    public static CustomConFragment newInstance(Controller controller, SettingDialog settingDialog, int layout) {
+        return new CustomConFragment(controller, settingDialog, layout);
     }
 
     @Override
@@ -85,20 +87,23 @@ public class CustomConFragment extends FullConFragment{
             }
         });
 
-        editReset.setOnClickListener(view -> {
-            setCustomLayout(Config.getDefaultLayoutData());
-        });
+        editReset.setOnClickListener(view -> setCustomLayout(Config.getDefaultLayoutData()));
 
         editQuit.setOnClickListener(view -> {
             setEditMode(false);
             if (Config.getCurrentLayout() == 3) Config.setCurrentLayout(2);
-//            initLayout(Config.getCurrentLayout());
+            Message msg = Message.obtain();
+            msg.what = 1;
+            msg.obj = Config.getCurrentLayout();
+            MainActivity.getHandler().sendMessage(msg);
         });
 
         sizeSeekBar.setOnTouchListener((view, motionEvent) -> {
             layoutContainer.resizeView((((AppCompatSeekBar) view).getProgress() - 50) * 0.002f);
             return false;
         });
+
+        readCustomLayout(layout);
     }
 
     public void setEditMode(boolean isOpen){
@@ -108,14 +113,23 @@ public class CustomConFragment extends FullConFragment{
         setting.setVisibility(isOpen ? View.GONE : View.VISIBLE);
     }
 
+    public void setLayout(int layout){
+        this.layout = layout;
+        readCustomLayout(layout);
+    }
+
     public void saveNewCustomLayout(String name){
         setEditMode(false);
         int layout = Config.addCustomLayoutData(getNowLayoutData(name));
         Config.setCurrentLayout(layout);
-//        initLayout(layout);
+        setLayout(layout);
     }
 
     private void readCustomLayout(int layout){
+        if(layout == 3) {
+            setEditMode(true);
+            return;
+        }
         setCustomLayout(Config.getCustomLayoutData(layout));
     }
 
@@ -144,13 +158,15 @@ public class CustomConFragment extends FullConFragment{
     }
 
     private void foreachConLayout(Consumer<View> process){
-        ViewGroup viewWrapper = (ViewGroup) layoutContainer.getChildAt(0);
-        for (int i = 0; i < viewWrapper.getChildCount(); i++){
-            View v = viewWrapper.getChildAt(i);
+        for (int i = 0; i < layoutContainer.getChildCount(); i++){
+            View v = layoutContainer.getChildAt(i);
             if (v.getTag() != null){
                 process.accept(v);
             }
         }
     }
 
+    @Override
+    public void abxySwitch() {
+    }
 }
