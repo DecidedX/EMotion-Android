@@ -9,6 +9,8 @@ import top.decided.emotion.service.Service;
 
 public class ControllerButtonTouchListener implements View.OnTouchListener {
 
+    private static ControllerButtonTouchListener instance;
+
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN){
@@ -18,6 +20,11 @@ public class ControllerButtonTouchListener implements View.OnTouchListener {
             Service.getController().setPressed(Integer.parseInt((String) v.getTag()), false);
         }
         return false;
+    }
+
+    public static ControllerButtonTouchListener getInstance(){
+        if (instance == null) instance = new ControllerButtonTouchListener();
+        return instance;
     }
 
 }

@@ -5,6 +5,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatSeekBar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.Group;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -33,21 +36,26 @@ import top.decided.emotion.config.Config;
 import top.decided.emotion.config.CustomLayoutData;
 import top.decided.emotion.dialog.InputDialog;
 import top.decided.emotion.dialog.SettingDialog;
+import top.decided.emotion.fragment.BaseConFragment;
+import top.decided.emotion.fragment.CustomConFragment;
+import top.decided.emotion.fragment.FullConFragment;
+import top.decided.emotion.fragment.NSConFragment;
 import top.decided.emotion.service.Service;
 import top.decided.emotion.widget.LayoutContainer;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
-    private ImageButton setting, unlockScreen;
+//    private ImageButton setting, unlockScreen;
     private SensorManager sensorManager;
     private Sensor accSensor, gyroSensor;
     private Vibrator vibrator;
     private Controller controller;
-    private GamePad gamePad;
+//    private GamePad gamePad;
     private SettingDialog settingDialog;
-    private Group lockScreen;
+//    private Group lockScreen;
     private LayoutContainer layoutContainer;
-    private AppCompatSeekBar sizeSeekBar;
+//    private AppCompatSeekBar sizeSeekBar;
+    BaseConFragment conFragment;
     private static Handler handler;
 
     @SuppressLint("ClickableViewAccessibility")
@@ -66,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (Config.getCurrentLayout() == 3){
             Config.setCurrentLayout(2);
         }
+
         initLayout(Config.getCurrentLayout());
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -77,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         controller = Service.getController();
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
     }
 
     @Override
@@ -158,120 +168,98 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void screenCutoutConfigure() {
         getWindow().getDecorView().post(() -> {
             Config.setCutout(getWindow().getDecorView().getRootWindowInsets().getDisplayCutout() != null);
-            if (Config.isCutout() && Config.isUseCutout()){
+            if (Config.isCutout() && Config.isUseCutout()) {
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             }
         });
     }
 
-    private void setConLayout(int layout){
-        layoutContainer = findViewById(R.id.layoutContainer);
-        layoutContainer.removeAllViews();
-        if (layout < 2){
-            getLayoutInflater().inflate(R.layout.ns_con, layoutContainer, true);
-        }else if (layout == 2){
-            getLayoutInflater().inflate(R.layout.full_con, layoutContainer, true);
-        }else {
-            getLayoutInflater().inflate(R.layout.custom_con, layoutContainer, true);
-        }
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
     private void initLayout(int layout){
-        setConLayout(layout);
-        gamePad = new GamePad(this, layout);
-
-        setting = findViewById(R.id.buttonSetting);
-        lockScreen = findViewById(R.id.lockScreenGroup);
-        unlockScreen = findViewById(R.id.unlockScreen);
-
-        if (layout >= 2){
-            if (layout >= 3){
-                sizeSeekBar = findViewById(R.id.sizeSeekBar);
-                sizeSeekBar.setEnabled(false);
-
-                findViewById(R.id.editSaveButton).setOnClickListener(view -> {
-                    layoutContainer.clearSelect();
-                    int currentLayout = Config.getCurrentLayout();
-                    if(currentLayout == 3){
-                        new InputDialog(this, handler).show();
-                    }else {
-                        setEditMode(false);
-                        Config.modifyCustomLayoutData(getNowLayoutData(""),currentLayout);
-                    }
-                });
-
-                findViewById(R.id.editResetButton).setOnClickListener(view -> {
-                    setCustomLayout(Config.getDefaultLayoutData());
-                });
-
-                findViewById(R.id.editQuitButton).setOnClickListener(view -> {
-                    setEditMode(false);
-                    if (Config.getCurrentLayout() == 3) Config.setCurrentLayout(2);
-                    initLayout(Config.getCurrentLayout());
-                });
-
-                sizeSeekBar.setOnTouchListener((view, motionEvent) -> {
-                    layoutContainer.resizeView((((AppCompatSeekBar) view).getProgress() - 50) * 0.002f);
-                    return false;
-                });
-
-                if (layout > 3) readCustomLayout(layout);
-            }
+        switch (layout){
+            case 0:
+            case 1:
+                conFragment = new NSConFragment(controller, settingDialog, layout == 0);
+                break;
+            case 2:
+                conFragment = new FullConFragment(controller, settingDialog);
+                break;
+            default:
+                conFragment = new CustomConFragment(controller, settingDialog);
+                break;
         }
-
-        setting.setOnClickListener(view -> settingDialog.show());
-        unlockScreen.setOnClickListener(view -> {
-            pressedVibration(Config.isButtonVibration(), vibrator);
-            lockScreen.setVisibility(View.INVISIBLE);
-            settingDialog.resetLockScreen();
-        });
+        switchConLayout();
     }
 
-    private void readCustomLayout(int layout){
-        setCustomLayout(Config.getCustomLayoutData(layout));
+    private void switchConLayout(){
+        FragmentManager fgm = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fgm.beginTransaction();
+        fragmentTransaction.replace(R.id.layoutContainer,conFragment);
+        fragmentTransaction.commit();
     }
 
-    private void setCustomLayout(CustomLayoutData layoutData){
-        foreachConLayout((v -> {
-            CustomLayoutData.ViewValues value = layoutData.getViewValue(Integer.parseInt((String) v.getTag()));
-            ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) v.getLayoutParams();
-            layoutParams.verticalBias = value.getVBias();
-            layoutParams.horizontalBias = value.getHBias();
-            layoutParams.matchConstraintPercentHeight = value.getDeltaSize();
-            v.setLayoutParams(layoutParams);
-        }));
-    }
+//    private void setConLayout(int layout){
+//        layoutContainer = findViewById(R.id.layoutContainer);
+//        layoutContainer.removeAllViews();
+//        if (layout < 2){
+//            getLayoutInflater().inflate(R.layout.ns_con, layoutContainer, true);
+//        }else if (layout == 2){
+//            getLayoutInflater().inflate(R.layout.full_con, layoutContainer, true);
+//        }else {
+//            getLayoutInflater().inflate(R.layout.custom_con, layoutContainer, true);
+//        }
+//    }
 
-    private CustomLayoutData getNowLayoutData(String layoutName){
-        CustomLayoutData customLayout = new CustomLayoutData(layoutName , new ArrayList<>());
-        foreachConLayout((v ->{
-            ConstraintLayout.LayoutParams layoutParams = (ConstraintLayout.LayoutParams) v.getLayoutParams();
-            customLayout.addViewValue(
-                    Integer.parseInt((String) v.getTag()),
-                    layoutParams.verticalBias,
-                    layoutParams.horizontalBias,
-                    layoutParams.matchConstraintPercentHeight);
-        }));
-        return customLayout;
-    }
-
-    private void foreachConLayout(Consumer<View> process){
-        ViewGroup viewWrapper = (ViewGroup) layoutContainer.getChildAt(0);
-        for (int i = 0; i < viewWrapper.getChildCount(); i++){
-            View v = viewWrapper.getChildAt(i);
-            if (v.getTag() != null){
-                process.accept(v);
-            }
-        }
-    }
-
-    private void setEditMode(boolean isOpen){
-        settingDialog.hide();
-        layoutContainer.setEditMode(isOpen);
-        findViewById(R.id.editToolsContainer).setVisibility(isOpen ? View.VISIBLE : View.GONE);
-        setting.setVisibility(isOpen ? View.GONE : View.VISIBLE);
-    }
+//    @SuppressLint("ClickableViewAccessibility")
+//    private void initLayout(int layout){
+//        setConLayout(layout);
+////        gamePad = new GamePad(this, layout);
+//
+////        setting = findViewById(R.id.buttonSetting);
+////        lockScreen = findViewById(R.id.lockScreenGroup);
+////        unlockScreen = findViewById(R.id.unlockScreen);
+//
+//        if (layout >= 2){
+//            if (layout >= 3){
+////                sizeSeekBar = findViewById(R.id.sizeSeekBar);
+////                sizeSeekBar.setEnabled(false);
+//
+//                findViewById(R.id.editSaveButton).setOnClickListener(view -> {
+//                    layoutContainer.clearSelect();
+//                    int currentLayout = Config.getCurrentLayout();
+//                    if(currentLayout == 3){
+//                        new InputDialog(this, handler).show();
+//                    }else {
+//                        setEditMode(false);
+//                        Config.modifyCustomLayoutData(getNowLayoutData(""),currentLayout);
+//                    }
+//                });
+//
+//                findViewById(R.id.editResetButton).setOnClickListener(view -> {
+//                    setCustomLayout(Config.getDefaultLayoutData());
+//                });
+//
+//                findViewById(R.id.editQuitButton).setOnClickListener(view -> {
+//                    setEditMode(false);
+//                    if (Config.getCurrentLayout() == 3) Config.setCurrentLayout(2);
+//                    initLayout(Config.getCurrentLayout());
+//                });
+//
+////                sizeSeekBar.setOnTouchListener((view, motionEvent) -> {
+////                    layoutContainer.resizeView((((AppCompatSeekBar) view).getProgress() - 50) * 0.002f);
+////                    return false;
+////                });
+//
+//                if (layout > 3) readCustomLayout(layout);
+//            }
+//        }
+//
+////        setting.setOnClickListener(view -> settingDialog.show());
+////        unlockScreen.setOnClickListener(view -> {
+////            pressedVibration(Config.isButtonVibration(), vibrator);
+////            lockScreen.setVisibility(View.INVISIBLE);
+////            settingDialog.resetLockScreen();
+////        });
+//    }
 
     public static Handler getHandler(){
         return handler;
@@ -300,12 +288,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void switchLayout(int nextLayout){
         int currentLayout = Config.getCurrentLayout();
         if (currentLayout < 2 && nextLayout < 2){
-            gamePad.switchLRCon(nextLayout);
+            ((NSConFragment) conFragment).switchLRCon(nextLayout == 0);
         }else {
             initLayout(nextLayout);
-            if (nextLayout == 3){
-                setEditMode(true);
-            }
+//            if (nextLayout == 3){
+//                setEditMode(true);
+//            }
         }
         Config.setCurrentLayout(nextLayout);
     }
@@ -315,7 +303,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (abxySwitch == bool || Config.getCurrentLayout() < 2)
             return;
         Config.setAbxySwitch(bool);
-        gamePad.abxySwitch();
+//        gamePad.abxySwitch();
     }
 
     private void startVibrate(long time, int amplitude){
@@ -330,13 +318,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         }else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         Config.setUseCutout(useCutout);
-    }
-
-    private void saveNewCustomLayout(String name){
-        setEditMode(false);
-        int layout = Config.addCustomLayoutData(getNowLayoutData(name));
-        Config.setCurrentLayout(layout);
-        initLayout(layout);
     }
 
     private static class MainActivityHandler extends Handler{
@@ -366,16 +347,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     break;
                 case 4:
                     boolean lock = (boolean) msg.obj;
-                    mainActivityWeakReference.get().lockScreen.setVisibility(lock ? View.VISIBLE : View.INVISIBLE);
+//                    mainActivityWeakReference.get().lockScreen.setVisibility(lock ? View.VISIBLE : View.INVISIBLE);
                     break;
                 case 5:
                     mainActivityWeakReference.get().expandToCutout((boolean)msg.obj);
                     break;
                 case 6:
-                    mainActivityWeakReference.get().setEditMode((boolean) msg.obj);
+//                    mainActivityWeakReference.get().setEditMode((boolean) msg.obj);
                     break;
                 case 7:
-                    mainActivityWeakReference.get().saveNewCustomLayout((String) msg.obj);
+//                    mainActivityWeakReference.get().saveNewCustomLayout((String) msg.obj);
                     break;
             }
         }

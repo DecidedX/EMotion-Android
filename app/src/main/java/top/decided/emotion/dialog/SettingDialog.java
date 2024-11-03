@@ -126,23 +126,7 @@ public class SettingDialog extends Dialog {
     }
 
     private void initIpSelector(){
-        ArrayAdapter<String> stringArrayAdapter = new ArrayAdapter<>(context, R.layout.spinner_selecte);
-        try {
-            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
-            while (interfaces.hasMoreElements()){
-                NetworkInterface networkInterface = interfaces.nextElement();
-                Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
-                while (addresses.hasMoreElements()){
-                    InetAddress address = addresses.nextElement();
-                    if (address instanceof Inet4Address){
-                        stringArrayAdapter.add(address.getHostAddress());
-                    }
-                }
-            }
-        } catch (SocketException e) {
-            throw new RuntimeException(e);
-        }
-        stringArrayAdapter.setDropDownViewResource(R.layout.spinner_dropdown);
+        ArrayAdapter<String> stringArrayAdapter = getIpAdapter();
         ipSelector.setAdapter(stringArrayAdapter);
         if (Service.getServiceStatus()){
             ipSelector.setSelection(stringArrayAdapter.getPosition(Service.getSocket().getLocalAddress().getHostAddress()));
@@ -160,6 +144,27 @@ public class SettingDialog extends Dialog {
 
             }
         });
+    }
+
+    private @NonNull ArrayAdapter<String> getIpAdapter() {
+        ArrayAdapter<String> stringArrayAdapter = new ArrayAdapter<>(context, R.layout.spinner_selecte);
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()){
+                NetworkInterface networkInterface = interfaces.nextElement();
+                Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                while (addresses.hasMoreElements()){
+                    InetAddress address = addresses.nextElement();
+                    if (address instanceof Inet4Address){
+                        stringArrayAdapter.add(address.getHostAddress());
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            throw new RuntimeException(e);
+        }
+        stringArrayAdapter.setDropDownViewResource(R.layout.spinner_dropdown);
+        return stringArrayAdapter;
     }
 
     private void initLayoutSelector(){
