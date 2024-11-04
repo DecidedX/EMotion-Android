@@ -46,16 +46,11 @@ import top.decided.emotion.widget.LayoutContainer;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
-//    private ImageButton setting, unlockScreen;
     private SensorManager sensorManager;
     private Sensor accSensor, gyroSensor;
     private Vibrator vibrator;
     private Controller controller;
-//    private GamePad gamePad;
     private SettingDialog settingDialog;
-//    private Group lockScreen;
-    private LayoutContainer layoutContainer;
-//    private AppCompatSeekBar sizeSeekBar;
     BaseConFragment conFragment;
     private static Handler handler;
 

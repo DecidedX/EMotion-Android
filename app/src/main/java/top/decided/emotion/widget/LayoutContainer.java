@@ -41,10 +41,13 @@ public class LayoutContainer extends ConstraintLayout {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        if (editMode){
+        if (editMode && event.getAction() == MotionEvent.ACTION_DOWN
+                || event.getAction() == MotionEvent.ACTION_UP){
             View view = findTouchedView(this, (int) event.getX(), (int) event.getY());
             if (view == null) return false;
             if (view.getTag() == null) return false;
+            if (touchedView != null) touchedView.setSelected(false);
+            touchedView = view;
         }
         return editMode;//根据编辑模式是否拦截触摸，转至onTouchEvent
     }
@@ -55,8 +58,6 @@ public class LayoutContainer extends ConstraintLayout {
         float y = event.getY();
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
-                if (touchedView != null) touchedView.setSelected(false);
-                touchedView = findTouchedView(this, (int) x, (int) y);
                 if (touchedView != null) {
                     touchedView.setSelected(true);
                     sizeSeekBar.setEnabled(true);
@@ -101,7 +102,7 @@ public class LayoutContainer extends ConstraintLayout {
                     if (child instanceof ViewGroup) {
                         return findTouchedView((ViewGroup) child, x - rect.left, y - rect.top);
                     } else {
-                        return child;
+                        return child.getTag() == null ? null : child;
                     }
                 }
             }
@@ -123,13 +124,14 @@ public class LayoutContainer extends ConstraintLayout {
 
     public void openEditMode(){
         this.editMode = true;
-        sizeSeekBar = findViewById(R.id.sizeSeekBar);
+        if (sizeSeekBar == null) sizeSeekBar = findViewById(R.id.sizeSeekBar);
     }
 
     public void closeEditMode(){
-        this.editMode = false;
+        clearSelect();
+        editMode = false;
         sizeSeekBar.setEnabled(false);
-        sizeSeekBar = null;
+        sizeSeekBar.setProgress(50);
     }
 
     public void clearSelect(){
