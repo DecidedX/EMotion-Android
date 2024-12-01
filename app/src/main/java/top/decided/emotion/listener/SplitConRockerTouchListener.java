@@ -5,7 +5,7 @@ import android.view.View;
 
 import top.decided.emotion.cemuhook.Controller;
 import top.decided.emotion.config.Config;
-import top.decided.emotion.service.Service;
+import top.decided.emotion.service.ConnectionService;
 import top.decided.emotion.widget.Rocker;
 
 public class SplitConRockerTouchListener implements View.OnTouchListener {
@@ -36,7 +36,7 @@ public class SplitConRockerTouchListener implements View.OnTouchListener {
         }else {
             down = rocker.isDown();
         }
-        Controller controller = Service.getController();
+        Controller controller = ConnectionService.getInstance().getController();
         if (Config.getCurrentLayout() == 0){
             controller.update(Controller.LEFT_STICK_X, x);
             controller.update(Controller.LEFT_STICK_Y, y);

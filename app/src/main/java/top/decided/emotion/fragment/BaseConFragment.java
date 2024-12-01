@@ -87,4 +87,21 @@ public class BaseConFragment extends Fragment {
         lockScreen.setVisibility(lock ? View.VISIBLE : View.INVISIBLE);
     }
 
+    public static BaseConFragment getConFragment(int layout, Controller controller, SettingDialog settingDialog){
+        BaseConFragment conFragment;
+        switch (layout){
+            case 0:
+            case 1:
+                conFragment = NSConFragment.newInstance(controller, settingDialog, layout == 0);
+                break;
+            case 2:
+                conFragment = FullConFragment.newInstance(controller, settingDialog);
+                break;
+            default:
+                conFragment = CustomConFragment.newInstance(controller, settingDialog, layout);
+                break;
+        }
+        return conFragment;
+    }
+
 }

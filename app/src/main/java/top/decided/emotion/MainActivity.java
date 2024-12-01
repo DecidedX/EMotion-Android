@@ -2,57 +2,70 @@ package top.decided.emotion;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatSeekBar;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.Group;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.Context;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.ImageButton;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.function.Consumer;
 
 import top.decided.emotion.cemuhook.Controller;
 import top.decided.emotion.config.Config;
-import top.decided.emotion.config.CustomLayoutData;
-import top.decided.emotion.dialog.InputDialog;
 import top.decided.emotion.dialog.SettingDialog;
 import top.decided.emotion.fragment.BaseConFragment;
 import top.decided.emotion.fragment.CustomConFragment;
 import top.decided.emotion.fragment.FullConFragment;
 import top.decided.emotion.fragment.NSConFragment;
-import top.decided.emotion.listener.FullConRockerTouchListener;
-import top.decided.emotion.service.Service;
-import top.decided.emotion.widget.LayoutContainer;
+import top.decided.emotion.service.ConnectionService;
+import top.decided.emotion.service.FloatingModeService;
+import top.decided.emotion.utils.HandlerCaseType;
 
-public class MainActivity extends AppCompatActivity implements SensorEventListener {
-
-    private SensorManager sensorManager;
-    private Sensor accSensor, gyroSensor;
+public class MainActivity extends AppCompatActivity {
     private Vibrator vibrator;
     private Controller controller;
     private SettingDialog settingDialog;
     BaseConFragment conFragment;
     private static Handler handler;
+    private FloatingModeService floatingService;
+    private ConnectionService connectionService;
+    private final ServiceConnection floatingServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            floatingService = ((FloatingModeService.FloatingServiceBinder) iBinder).getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            floatingService = null;
+        }
+    };
+
+    private final ServiceConnection connectionServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            connectionService = ((ConnectionService.ConnectionServiceBinder) iBinder).getService();
+            controller = connectionService.getController();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            connectionService = null;
+        }
+    };
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -62,7 +75,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Config.init(getApplication());
         screenCutoutConfigure();
 
-        if (Service.getServiceStatus()) Service.close();
+        bindService(new Intent(this, ConnectionService.class), connectionServiceConnection, Context.BIND_AUTO_CREATE);
+
         //TODO:首次启动选择使用模式并存储，同时可在设置中切换使用模式
         handler = new MainActivityHandler(getMainLooper(), this);
         settingDialog = new SettingDialog(this, handler);
@@ -73,13 +87,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         initLayout(Config.getCurrentLayout());
 
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        accSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        gyroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         Config.setVibrator(vibrator);
-
-        controller = Service.getController();
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -91,74 +100,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        switchSensor(sensorManager != null && Service.getServiceStatus());
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        switchSensor(false);
-    }
-
-    @Override
     protected void onStop() {
         super.onStop();
         handler.removeCallbacksAndMessages(null);
-    }
-
-    @SuppressLint("DefaultLocale")
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        float[] values = new float[3];
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
-            switch (Config.getGyroDirection()){
-                case 0:
-                    values[0] = event.values[1] / 9.81F;
-                    values[1] = -event.values[2] / 9.81F;
-                    values[2] = event.values[0] / 9.81F;
-                    break;
-                case 1:
-                    values[0] = event.values[2] / 9.81F;
-                    values[1] = -event.values[0] / 9.81F;
-                    values[2] = event.values[1] / 9.81F;
-                    break;
-                case 2:
-                    values[0] = -event.values[2] / 9.81F;
-                    values[1] = event.values[0] / 9.81F;
-                    values[2] = event.values[1] / 9.81F;
-                    break;
-            }
-
-            controller.updateAccSensor(values);
-            long nanoTime = System.nanoTime();
-            controller.setTimestamp(System.currentTimeMillis() * 1000 + (nanoTime - nanoTime / 1000000 * 1000000) / 1000);
-        }else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE){
-            switch (Config.getGyroDirection()){
-                case 0:
-                    values[0] = (float) - Math.toDegrees(event.values[1]);
-                    values[1] = (float) - Math.toDegrees(event.values[2]);
-                    values[2] = (float) Math.toDegrees(event.values[0]);
-                    break;
-                case 1:
-                    values[0] = (float) - Math.toDegrees(event.values[2]);
-                    values[1] = (float) - Math.toDegrees(event.values[0]);
-                    values[2] = (float) Math.toDegrees(event.values[1]);
-                    break;
-                case 2:
-                    values[0] = (float) Math.toDegrees(event.values[2]);
-                    values[1] = (float) Math.toDegrees(event.values[0]);
-                    values[2] = (float) Math.toDegrees(event.values[1]);
-                    break;
-            }
-            controller.updateGyroSensor(values);
-        }
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
-
     }
 
     private void screenCutoutConfigure() {
@@ -171,36 +115,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void initLayout(int layout){
-        switch (layout){
-            case 0:
-            case 1:
-                conFragment = NSConFragment.newInstance(controller, settingDialog, layout == 0);
-                break;
-            case 2:
-                conFragment = FullConFragment.newInstance(controller, settingDialog);
-                break;
-            default:
-                conFragment = CustomConFragment.newInstance(controller, settingDialog, layout);
-                break;
-        }
+        conFragment = BaseConFragment.getConFragment(layout, controller, settingDialog);
         switchConLayout();
     }
 
     private void switchConLayout(){
         FragmentManager fgm = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fgm.beginTransaction();
-        fragmentTransaction.replace(R.id.layoutFragmentViewer,conFragment);
+        fragmentTransaction
+                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
+                .replace(R.id.layoutFragmentViewer,conFragment);
         fragmentTransaction.commit();
-    }
-
-    private void switchSensor(boolean turnOn){
-        if (turnOn){
-            sensorManager.registerListener(MainActivity.this, accSensor, SensorManager.SENSOR_DELAY_GAME);
-            sensorManager.registerListener(MainActivity.this, gyroSensor,SensorManager.SENSOR_DELAY_GAME);
-        }else {
-            sensorManager.unregisterListener(MainActivity.this, accSensor);
-            sensorManager.unregisterListener(MainActivity.this, gyroSensor);
-        }
     }
 
     private void switchLayout(int nextLayout){
@@ -233,7 +158,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         vibrator.vibrate(effect);
     }
 
-    private void expandToCutout(boolean useCutout){
+    private void expandToCutout(boolean useCutout) throws IOException {
         if (useCutout){
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         }else getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
@@ -248,6 +173,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }else {
             vibrator.vibrate(VibrationEffect.createOneShot(1, 255));
         }
+    }
+
+    public void setFloatingMode(boolean open){
+        if (open){
+            startFloatingModeService();
+        }else {
+            unbindService(floatingServiceConnection);
+        }
+    }
+
+    private void startFloatingModeService(){
+        Intent startFMS = new Intent(this, FloatingModeService.class);
+        bindService(startFMS, floatingServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     public static Handler getHandler(){
@@ -267,29 +205,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void handleMessage(@NonNull Message msg) {
             super.handleMessage(msg);
             switch (msg.what){
-                case 0:
-                    mainActivityWeakReference.get().switchSensor((boolean) msg.obj);
-                    break;
-                case 1:
+                case HandlerCaseType.SWITCH_LAYOUT:
                     mainActivityWeakReference.get().switchLayout((int) msg.obj);
                     break;
-                case 2:
+                case HandlerCaseType.SWITCH_ABXY:
                     mainActivityWeakReference.get().switchNSLayout((boolean) msg.obj);
                     break;
-                case 3:
+                case HandlerCaseType.START_VIBRATE:
                     mainActivityWeakReference.get().startVibrate(100, (int) msg.obj);
                     break;
-                case 4:
+                case HandlerCaseType.LOCK_SCREEN:
                     mainActivityWeakReference.get().conFragment.lockScreen((boolean) msg.obj);
                     break;
-                case 5:
-                    mainActivityWeakReference.get().expandToCutout((boolean)msg.obj);
+                case HandlerCaseType.EXPAND_CUTOUT:
+                    try {
+                        mainActivityWeakReference.get().expandToCutout((boolean)msg.obj);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
-                case 6:
+                case HandlerCaseType.EDIT_MODE:
                     ((CustomConFragment) mainActivityWeakReference.get().conFragment).setEditMode((boolean) msg.obj);
                     break;
-                case 7:
+                case HandlerCaseType.SAVE_CUSTOM_LAYOUT:
                     ((CustomConFragment) mainActivityWeakReference.get().conFragment).saveNewCustomLayout((String) msg.obj);
+                    break;
+                case HandlerCaseType.SET_FLOATING:
+                    mainActivityWeakReference.get().setFloatingMode((boolean) msg.obj);
                     break;
             }
         }

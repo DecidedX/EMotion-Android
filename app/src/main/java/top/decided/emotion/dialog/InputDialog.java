@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import top.decided.emotion.R;
+import top.decided.emotion.utils.HandlerCaseType;
 
 public class InputDialog extends Dialog {
 
@@ -45,7 +46,7 @@ public class InputDialog extends Dialog {
                 return;
             }
             Message msg = Message.obtain();
-            msg.what = 7;
+            msg.what = HandlerCaseType.SAVE_CUSTOM_LAYOUT;
             msg.obj = input.getText().toString();
             handler.sendMessage(msg);
             this.cancel();

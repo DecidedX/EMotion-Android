@@ -23,6 +23,7 @@ import top.decided.emotion.config.Config;
 import top.decided.emotion.config.CustomLayoutData;
 import top.decided.emotion.dialog.InputDialog;
 import top.decided.emotion.dialog.SettingDialog;
+import top.decided.emotion.utils.HandlerCaseType;
 import top.decided.emotion.widget.LayoutContainer;
 
 public class CustomConFragment extends FullConFragment{
@@ -91,10 +92,9 @@ public class CustomConFragment extends FullConFragment{
 
         editQuit.setOnClickListener(view -> {
             setEditMode(false);
-            if (Config.getCurrentLayout() == 3) Config.setCurrentLayout(2);
             Message msg = Message.obtain();
-            msg.what = 1;
-            msg.obj = Config.getCurrentLayout();
+            msg.what = HandlerCaseType.SWITCH_LAYOUT;
+            msg.obj = Config.getCurrentLayout() == 3 ? 2:Config.getCurrentLayout();
             MainActivity.getHandler().sendMessage(msg);
         });
 

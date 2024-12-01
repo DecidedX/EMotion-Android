@@ -4,7 +4,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import top.decided.emotion.cemuhook.Controller;
-import top.decided.emotion.service.Service;
+import top.decided.emotion.service.ConnectionService;
 import top.decided.emotion.widget.Rocker;
 
 public class FullConRockerTouchListener implements View.OnTouchListener {
@@ -24,7 +24,7 @@ public class FullConRockerTouchListener implements View.OnTouchListener {
         }
         int tag = Integer.parseInt((String) rocker.getTag()),
                 stickIDStart = tag == Controller.LEFT_STICK ? 2 : 4;
-        Controller controller = Service.getController();
+        Controller controller = ConnectionService.getInstance().getController();
         controller.update(stickIDStart, x);
         controller.update(stickIDStart + 1, y);
         controller.setPressed(tag, down);

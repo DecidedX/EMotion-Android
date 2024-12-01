@@ -10,16 +10,21 @@ public class SwitchCheckedChangeListener implements CompoundButton.OnCheckedChan
     private final Object msgObj;
     private final Handler handler;
     private final DoSomethingElse doSomethingElse;
+    private final ExecCondition execCondition;
 
-    public SwitchCheckedChangeListener(int msgWhat, Object msgObj, Handler handler, DoSomethingElse doSomethingElse){
+    public SwitchCheckedChangeListener(int msgWhat, Object msgObj, Handler handler, ExecCondition execCondition, DoSomethingElse doSomethingElse){
         this.msgWhat = msgWhat;
         this.msgObj = msgObj;
         this.handler = handler;
+        this.execCondition = execCondition;
         this.doSomethingElse = doSomethingElse;
     }
 
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+        if (execCondition != null && !execCondition.prepare(b)){
+            return;
+        }
         if (handler != null){
             Message msg = Message.obtain();
             msg.what = msgWhat;
@@ -34,6 +39,12 @@ public class SwitchCheckedChangeListener implements CompoundButton.OnCheckedChan
     public interface DoSomethingElse{
 
         void doSomething(boolean bool);
+
+    }
+
+    public interface ExecCondition{
+
+        boolean prepare(boolean bool);
 
     }
 

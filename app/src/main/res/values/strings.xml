@@ -14,6 +14,7 @@
     <string name="feedback_vibration">震动反馈</string>
     <string name="button_vibration">按钮震动</string>
     <string name="background_as_touchpad">空白处作触摸板</string>
+    <string name="set_floating">悬浮于其他应用上使用</string>
     <string name="forbidden_touch">禁止触摸(纯体感时防误触)</string>
     <string name="gyro_direction">体感握持</string>
     <string name="author_information">作者：DecidedX\n反馈邮箱：shang_xinw@qq.com</string>

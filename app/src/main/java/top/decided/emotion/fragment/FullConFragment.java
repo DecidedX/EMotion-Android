@@ -68,7 +68,9 @@ public class FullConFragment extends BaseConFragment{
         rockerRight.setOnTouchListener(fcrTouchListener);
         rockerLeft.setOnTouchListener(fcrTouchListener);
         touchPad.setOnTouchListener(new TouchPadTouchListener());
-        abxySwitch();
+        if (Config.isAbxySwitch()){
+            abxySwitch();
+        }
     }
 
     public void abxySwitch(){

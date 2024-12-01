@@ -12,7 +12,7 @@ import top.decided.emotion.cemuhook.Controller;
 import top.decided.emotion.cemuhook.Sender;
 import top.decided.emotion.cemuhook.Utils;
 import top.decided.emotion.cemuhook.body.Body;
-import top.decided.emotion.service.Service;
+import top.decided.emotion.service.ConnectionService;
 
 public class ControllerDataThread extends Thread {
 
@@ -62,13 +62,9 @@ public class ControllerDataThread extends Thread {
                 try {
                     response = new DatagramPacket(sender.doCrc32(bytes), bytes.length, address, port);
                     socket.send(response);
-                    sleep(10);
+                    sleep(5);
                 } catch (IOException | InterruptedException e) {
-                    Message msg = Message.obtain();
-                    msg.what = 0;
-                    msg.obj = false;
-                    MainActivity.getHandler().sendMessage(msg);
-                    Service.close();
+                    ConnectionService.getInstance().close();
                 }
                 count++;
             }

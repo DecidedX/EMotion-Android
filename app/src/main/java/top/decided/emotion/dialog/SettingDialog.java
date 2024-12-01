@@ -31,7 +31,9 @@ import java.util.List;
 import top.decided.emotion.R;
 import top.decided.emotion.config.Config;
 import top.decided.emotion.listener.SwitchCheckedChangeListener;
-import top.decided.emotion.service.Service;
+import top.decided.emotion.service.ConnectionService;
+import top.decided.emotion.utils.HandlerCaseType;
+import top.decided.emotion.utils.PermissionApply;
 
 public class SettingDialog extends Dialog {
 
@@ -76,21 +78,21 @@ public class SettingDialog extends Dialog {
         useCutoutSwitch = findViewById(R.id.useCutoutSwitch);
         useCutoutContainer = findViewById(R.id.useCutoutContainer);
 
-        serviceSwitch.setOnCheckedChangeListener((new SwitchCheckedChangeListener(0, null, handler, bool -> {
+        serviceSwitch.setOnCheckedChangeListener((compoundButton, bool) -> {
             if (bool){
                 try {
-                    Service.start();
+                    ConnectionService.getInstance().start();
                 } catch (IOException e) {
                     Toast.makeText(context, "服务启动异常\n" + e.getMessage(), Toast.LENGTH_LONG).show();
                     System.exit(0);
                 }
-            }else Service.close();
-        })));
+            }else ConnectionService.getInstance().close();
+        });
 
-        abxySwitch.setOnCheckedChangeListener(new SwitchCheckedChangeListener(2, null, handler, null));
-        lockScreenSwitch.setOnCheckedChangeListener(new SwitchCheckedChangeListener(4, null, handler, null));
-        useCutoutSwitch.setOnCheckedChangeListener(new SwitchCheckedChangeListener(5, null, handler, null));
-        layoutEditSwitch.setOnCheckedChangeListener(new SwitchCheckedChangeListener(6, null, handler, bool -> layoutEditSwitch.setChecked(false)));
+        abxySwitch.setOnCheckedChangeListener(new SwitchCheckedChangeListener(HandlerCaseType.SWITCH_ABXY, null, handler, null,null));
+        lockScreenSwitch.setOnCheckedChangeListener(new SwitchCheckedChangeListener(HandlerCaseType.LOCK_SCREEN, null, handler,null, null));
+        useCutoutSwitch.setOnCheckedChangeListener(new SwitchCheckedChangeListener(HandlerCaseType.EXPAND_CUTOUT, null, handler, null,null));
+        layoutEditSwitch.setOnCheckedChangeListener(new SwitchCheckedChangeListener(HandlerCaseType.EDIT_MODE, null, handler,null, bool -> layoutEditSwitch.setChecked(false)));
 
         touchpadSwitch.setOnCheckedChangeListener((compoundButton, bool) -> Config.setTouchpadSwitch(bool));
         vibration.setOnCheckedChangeListener((compoundButton, bool) -> Config.setVibration(bool));
@@ -111,7 +113,7 @@ public class SettingDialog extends Dialog {
         super.show();
         initIpSelector();
         initLayoutSelector();
-        serviceSwitch.setChecked(Service.getServiceStatus());
+        serviceSwitch.setChecked(ConnectionService.getInstance().getServiceStatus());
         abxySwitch.setChecked(Config.isAbxySwitch());
         vibration.setChecked(Config.isVibration());
         buttonVibration.setChecked(Config.isButtonVibration());
@@ -128,8 +130,8 @@ public class SettingDialog extends Dialog {
     private void initIpSelector(){
         ArrayAdapter<String> stringArrayAdapter = getIpAdapter();
         ipSelector.setAdapter(stringArrayAdapter);
-        if (Service.getServiceStatus()){
-            ipSelector.setSelection(stringArrayAdapter.getPosition(Service.getSocket().getLocalAddress().getHostAddress()));
+        if (ConnectionService.getInstance().getServiceStatus()){
+            ipSelector.setSelection(stringArrayAdapter.getPosition(ConnectionService.getInstance().getSocket().getLocalAddress().getHostAddress()));
         }else {
             ipSelector.setSelection(0);
         }
@@ -179,9 +181,9 @@ public class SettingDialog extends Dialog {
         layoutSelector.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (handler != null){
+                if (handler != null && Config.getCurrentLayout() != position){
                     Message msg = Message.obtain();
-                    msg.what = 1;
+                    msg.what = HandlerCaseType.SWITCH_LAYOUT;
                     msg.obj = position;
                     handler.sendMessage(msg);
                 }
@@ -197,7 +199,7 @@ public class SettingDialog extends Dialog {
 
     private void adjustCustomLayoutSetting(int position){
         layoutEditContainer.setVisibility(position > 3 ? View.VISIBLE : View.GONE);
-        abxySwitchContainer.setVisibility(position > 3 ? View.GONE : View.VISIBLE);
+        abxySwitchContainer.setVisibility(position == 2 ? View.VISIBLE : View.GONE);
     }
 
 }

@@ -15,7 +15,8 @@ import top.decided.emotion.cemuhook.Receiver;
 import top.decided.emotion.cemuhook.Sender;
 import top.decided.emotion.cemuhook.body.Body;
 import top.decided.emotion.cemuhook.body.InformationInBody;
-import top.decided.emotion.service.Service;
+import top.decided.emotion.service.ConnectionService;
+import top.decided.emotion.utils.HandlerCaseType;
 
 public class ResponseThread extends Thread{
 
@@ -51,11 +52,7 @@ public class ResponseThread extends Thread{
             try {
                 socket.receive(packet);
             } catch (IOException e) {
-                Message msg = Message.obtain();
-                msg.what = 0;
-                msg.obj = false;
-                MainActivity.getHandler().sendMessage(msg);
-                Service.close();
+                ConnectionService.getInstance().close();
             }
             receiver.update(Arrays.copyOfRange(packet.getData(), 0, packet.getLength()));
             if (receiver.getMessageType() == Body.CONTROLLER_INFORMATION) {
@@ -81,12 +78,12 @@ public class ResponseThread extends Thread{
                 }
             }else if (receiver.getMessageType() == Body.ACTUAL_DATA){
                 dataThread.startSend(packet.getAddress(), packet.getPort());
-                Service.getQuickConnectThread().exit();
+                ConnectionService.getInstance().getQuickConnectThread().exit();
             }else if (receiver.getMessageType() == Body.RUMBLE_MOTORS){
                 int motor = Byte.toUnsignedInt(receiver.getBytes()[29]);
                 if (motor != 0){
                     Message msg = Message.obtain();
-                    msg.what = 3;
+                    msg.what = HandlerCaseType.START_VIBRATE;
                     msg.obj = motor;
                     MainActivity.getHandler().sendMessage(msg);
                 }
