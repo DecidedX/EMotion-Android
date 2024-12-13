@@ -42,7 +42,7 @@ public class SettingDialog extends Dialog {
     private Spinner ipSelector;
     private Spinner layoutSelector;
     private SwitchCompat serviceSwitch, abxySwitch, lockScreenSwitch, touchpadSwitch,
-            vibration, buttonVibration, layoutEditSwitch, useCutoutSwitch;
+            vibration, buttonVibration, layoutEditSwitch, useCutoutSwitch, floatingSwitch;
     private SharedPreferences sharedPreferences;
     private RadioGroup gyroDirectionGroup;
     private ConstraintLayout layoutEditContainer, abxySwitchContainer, useCutoutContainer;
@@ -77,6 +77,7 @@ public class SettingDialog extends Dialog {
         abxySwitchContainer = findViewById(R.id.abxySwitchContainer);
         useCutoutSwitch = findViewById(R.id.useCutoutSwitch);
         useCutoutContainer = findViewById(R.id.useCutoutContainer);
+        floatingSwitch = findViewById(R.id.floatingSwitch);
 
         serviceSwitch.setOnCheckedChangeListener((compoundButton, bool) -> {
             if (bool){
@@ -103,6 +104,17 @@ public class SettingDialog extends Dialog {
             Config.setGyroDirection(Byte.parseByte((String) direction.getTag()));
         });
 
+        floatingSwitch.setOnCheckedChangeListener(new SwitchCheckedChangeListener(HandlerCaseType.SET_FLOATING, null, handler, bool -> {
+            if (Config.isFloating() == bool)
+                return false;
+            if (bool){
+                boolean result = PermissionApply.applyOverlay(context);
+                floatingSwitch.setChecked(result);
+                return result;
+            }
+            return true;
+        }, null));
+
         findViewById(R.id.donateButton).setOnClickListener(view -> new DonateDialog(context).show());
 
         initLayoutSelector();
@@ -121,6 +133,7 @@ public class SettingDialog extends Dialog {
         adjustCustomLayoutSetting(Config.getCurrentLayout());
         useCutoutSwitch.setChecked(Config.isUseCutout());
         useCutoutContainer.setVisibility(Config.isCutout() ? View.VISIBLE : View.GONE);
+        floatingSwitch.setChecked(Config.isFloating());
     }
 
     public void resetLockScreen(){

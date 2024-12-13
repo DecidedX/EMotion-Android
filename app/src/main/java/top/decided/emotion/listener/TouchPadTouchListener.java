@@ -10,8 +10,6 @@ import top.decided.emotion.service.ConnectionService;
 public class TouchPadTouchListener implements View.OnTouchListener {
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
-        System.out.println(12341);
-        System.out.printf("x:%.2f | y:%.2f | cx:%.2f | cy:%.2f", motionEvent.getX(), motionEvent.getY(), motionEvent.getX()/ view.getWidth() * 1920, motionEvent.getY()/ view.getHeight() * 943);
         if (Config.isTouchpadSwitch()){
             Controller controller = ConnectionService.getInstance().getController();
             switch (motionEvent.getAction()){

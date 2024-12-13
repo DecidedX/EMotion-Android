@@ -1,14 +1,12 @@
-package top.decided.emotion.fragment;
+package top.decided.emotion.controller;
 
 import android.annotation.SuppressLint;
-import android.os.Bundle;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import top.decided.emotion.R;
@@ -20,42 +18,32 @@ import top.decided.emotion.listener.FullConRockerTouchListener;
 import top.decided.emotion.listener.TouchPadTouchListener;
 import top.decided.emotion.widget.Rocker;
 
-public class FullConFragment extends BaseConFragment{
+public class FullController extends BaseController {
     ImageButton rt, lt;
     Rocker rockerLeft, rockerRight;
     View touchPad;
 
-    public FullConFragment(Controller controller, SettingDialog settingDialog) {
-        super(controller, settingDialog);
+    public FullController(Context context, ViewGroup container, Controller controller, SettingDialog settingDialog) {
+        super(context, container, controller, settingDialog);
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param controller Virtual controller.
-     * @param settingDialog Setting dialog page.
-     * @return A new instance of fragment FullConFragment.
-     */
-    public static FullConFragment newInstance(Controller controller, SettingDialog settingDialog) {
-        return new FullConFragment(controller, settingDialog);
+    public static FullController newInstance(Context context, ViewGroup container, Controller controller, SettingDialog settingDialog) {
+        return new FullController(context, container, controller, settingDialog);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(LayoutInflater inflater, ViewGroup container){
         return inflater.inflate(R.layout.full_con, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        touchPad = view.findViewById(R.id.touchpad);
-        rt = view.findViewById(R.id.buttonRT);
-        lt = view.findViewById(R.id.buttonLT);
-        rockerLeft = view.findViewById(R.id.rockerLeft);
-        rockerRight = view.findViewById(R.id.rockerRight);
-        super.onViewCreated(view, savedInstanceState);
+    public void onViewCreated() {
+        touchPad = rootView.findViewById(R.id.touchpad);
+        rt = rootView.findViewById(R.id.buttonRT);
+        lt = rootView.findViewById(R.id.buttonLT);
+        rockerLeft = rootView.findViewById(R.id.rockerLeft);
+        rockerRight = rootView.findViewById(R.id.rockerRight);
+        super.onViewCreated();
     }
 
     @SuppressLint("ClickableViewAccessibility")

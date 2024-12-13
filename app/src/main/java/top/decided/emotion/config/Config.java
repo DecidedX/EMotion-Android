@@ -27,6 +27,7 @@ public class Config {
     private static boolean cutout, useCutout;
     private static List<CustomLayoutData> customLayoutDataList;
     private static CustomLayoutData defaultLayoutData;
+    private static boolean floating = false;
 
     public static void init(Application application) {
         defaultLayoutData = new Gson().fromJson(application.getResources().getString(R.string.default_layout_data), CustomLayoutData.class);
@@ -193,6 +194,14 @@ public class Config {
 
     public static CustomLayoutData.ViewValues getDefaultLayoutValue(int buttonTag) {
         return defaultLayoutData.getViewValue(buttonTag);
+    }
+
+    public static boolean isFloating() {
+        return floating;
+    }
+
+    public static void setFloating(boolean floating) {
+        Config.floating = floating;
     }
 
     public static SharedPreferences getSharedPreferences() {

@@ -2,8 +2,6 @@ package top.decided.emotion;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
@@ -23,22 +21,18 @@ import android.view.WindowManager;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
-import top.decided.emotion.cemuhook.Controller;
 import top.decided.emotion.config.Config;
 import top.decided.emotion.dialog.SettingDialog;
-import top.decided.emotion.fragment.BaseConFragment;
-import top.decided.emotion.fragment.CustomConFragment;
-import top.decided.emotion.fragment.FullConFragment;
-import top.decided.emotion.fragment.NSConFragment;
+import top.decided.emotion.controller.ConManager;
+import top.decided.emotion.controller.CustomController;
 import top.decided.emotion.service.ConnectionService;
 import top.decided.emotion.service.FloatingModeService;
 import top.decided.emotion.utils.HandlerCaseType;
 
 public class MainActivity extends AppCompatActivity {
     private Vibrator vibrator;
-    private Controller controller;
     private SettingDialog settingDialog;
-    BaseConFragment conFragment;
+    private ConManager conManager;
     private static Handler handler;
     private FloatingModeService floatingService;
     private ConnectionService connectionService;
@@ -46,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             floatingService = ((FloatingModeService.FloatingServiceBinder) iBinder).getService();
+            floatingService.floating(MainActivity.this);
         }
 
         @Override
@@ -58,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             connectionService = ((ConnectionService.ConnectionServiceBinder) iBinder).getService();
-            controller = connectionService.getController();
+            conManager = new ConManager(MainActivity.this, findViewById(R.id.layoutControllerViewer), connectionService.getController(), settingDialog);
         }
 
         @Override
@@ -85,8 +80,6 @@ public class MainActivity extends AppCompatActivity {
             Config.setCurrentLayout(2);
         }
 
-        initLayout(Config.getCurrentLayout());
-
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         Config.setVibrator(vibrator);
 
@@ -112,43 +105,6 @@ public class MainActivity extends AppCompatActivity {
                 getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             }
         });
-    }
-
-    private void initLayout(int layout){
-        conFragment = BaseConFragment.getConFragment(layout, controller, settingDialog);
-        switchConLayout();
-    }
-
-    private void switchConLayout(){
-        FragmentManager fgm = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fgm.beginTransaction();
-        fragmentTransaction
-                .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
-                .replace(R.id.layoutFragmentViewer,conFragment);
-        fragmentTransaction.commit();
-    }
-
-    private void switchLayout(int nextLayout){
-        int currentLayout = Config.getCurrentLayout();
-        if (currentLayout < 2 && nextLayout < 2){
-            ((NSConFragment) conFragment).switchLRCon(nextLayout == 0);
-        }else if (currentLayout >= 3 && nextLayout >= 3){
-            if (nextLayout == 3){
-                ((CustomConFragment) conFragment).setEditMode(true);
-            }
-            ((CustomConFragment) conFragment).setLayout(nextLayout);
-        }else {
-            initLayout(nextLayout);
-        }
-        Config.setCurrentLayout(nextLayout);
-    }
-
-    private void switchNSLayout(boolean bool){
-        boolean abxySwitch = Config.isAbxySwitch();
-        if (abxySwitch == bool || Config.getCurrentLayout() < 2)
-            return;
-        Config.setAbxySwitch(bool);
-        ((FullConFragment) conFragment).abxySwitch();
     }
 
     private void startVibrate(long time, int amplitude){
@@ -188,6 +144,13 @@ public class MainActivity extends AppCompatActivity {
         bindService(startFMS, floatingServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
+    private void switchLayout(int nextLayout){
+        if (floatingService != null && nextLayout != 3){
+            floatingService.switchLayout(nextLayout);
+        }
+        conManager.switchLayout(nextLayout);
+    }
+
     public static Handler getHandler(){
         return handler;
     }
@@ -207,15 +170,16 @@ public class MainActivity extends AppCompatActivity {
             switch (msg.what){
                 case HandlerCaseType.SWITCH_LAYOUT:
                     mainActivityWeakReference.get().switchLayout((int) msg.obj);
+                    Config.setCurrentLayout((int) msg.obj);
                     break;
                 case HandlerCaseType.SWITCH_ABXY:
-                    mainActivityWeakReference.get().switchNSLayout((boolean) msg.obj);
+                    mainActivityWeakReference.get().conManager.switchNSLayout((boolean) msg.obj);
                     break;
                 case HandlerCaseType.START_VIBRATE:
                     mainActivityWeakReference.get().startVibrate(100, (int) msg.obj);
                     break;
                 case HandlerCaseType.LOCK_SCREEN:
-                    mainActivityWeakReference.get().conFragment.lockScreen((boolean) msg.obj);
+                    mainActivityWeakReference.get().conManager.getControllerLayout().lockScreen((boolean) msg.obj);
                     break;
                 case HandlerCaseType.EXPAND_CUTOUT:
                     try {
@@ -225,13 +189,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                     break;
                 case HandlerCaseType.EDIT_MODE:
-                    ((CustomConFragment) mainActivityWeakReference.get().conFragment).setEditMode((boolean) msg.obj);
+                    ((CustomController)mainActivityWeakReference.get().conManager.getControllerLayout()).setEditMode((boolean) msg.obj);
                     break;
                 case HandlerCaseType.SAVE_CUSTOM_LAYOUT:
-                    ((CustomConFragment) mainActivityWeakReference.get().conFragment).saveNewCustomLayout((String) msg.obj);
+                    ((CustomController)mainActivityWeakReference.get().conManager.getControllerLayout()).saveNewCustomLayout((String) msg.obj);
                     break;
                 case HandlerCaseType.SET_FLOATING:
                     mainActivityWeakReference.get().setFloatingMode((boolean) msg.obj);
+                    Config.setFloating((boolean) msg.obj);
                     break;
             }
         }

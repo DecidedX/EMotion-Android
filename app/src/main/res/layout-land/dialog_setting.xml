@@ -209,6 +209,23 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp">
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/floatingSwitch"
+                    android:layout_width="272dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="12dp"
+                    android:text="@string/set_floating"
+                    android:textColor="@android:color/primary_text_light_nodisable"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp">
                 <androidx.appcompat.widget.SwitchCompat
                     android:id="@+id/lock_screen_switch"
                     android:layout_width="272dp"
@@ -283,6 +300,7 @@
                 </RadioGroup>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
+
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp"/>

@@ -1,15 +1,13 @@
-package top.decided.emotion.fragment;
+package top.decided.emotion.controller;
 
 import android.annotation.SuppressLint;
-import android.os.Bundle;
+import android.content.Context;
 import android.os.Message;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatSeekBar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
@@ -26,7 +24,7 @@ import top.decided.emotion.dialog.SettingDialog;
 import top.decided.emotion.utils.HandlerCaseType;
 import top.decided.emotion.widget.LayoutContainer;
 
-public class CustomConFragment extends FullConFragment{
+public class CustomController extends FullController {
 
     AppCompatSeekBar sizeSeekBar;
     ImageButton editSave, editReset, editQuit;
@@ -36,39 +34,30 @@ public class CustomConFragment extends FullConFragment{
 
     private int layout;
 
-    public CustomConFragment(Controller controller, SettingDialog settingDialog, int layout) {
-        super(controller, settingDialog);
+    public CustomController(Context context, ViewGroup container, Controller controller, SettingDialog settingDialog, int layout) {
+        super(context, container, controller, settingDialog);
         this.layout = layout;
+        readCustomLayout(layout);
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param controller Virtual controller.
-     * @param settingDialog Setting dialog page.
-     * @return A new instance of fragment CustomConFragment.
-     */
-    public static CustomConFragment newInstance(Controller controller, SettingDialog settingDialog, int layout) {
-        return new CustomConFragment(controller, settingDialog, layout);
+    public static CustomController newInstance(Context context, ViewGroup container, Controller controller, SettingDialog settingDialog, int layout) {
+        return new CustomController(context, container, controller, settingDialog, layout);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(LayoutInflater inflater, ViewGroup container) {
         return inflater.inflate(R.layout.custom_con, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        layoutContainer = view.findViewById(R.id.layoutContainer);
-        editToolsContainer = view.findViewById(R.id.editToolsContainer);
-        sizeSeekBar = view.findViewById(R.id.sizeSeekBar);
-        editSave = view.findViewById(R.id.editSaveButton);
-        editReset = view.findViewById(R.id.editResetButton);
-        editQuit = view.findViewById(R.id.editQuitButton);
-        super.onViewCreated(view, savedInstanceState);
+    public void onViewCreated() {
+        layoutContainer = rootView.findViewById(R.id.layoutContainer);
+        editToolsContainer = rootView.findViewById(R.id.editToolsContainer);
+        sizeSeekBar = rootView.findViewById(R.id.sizeSeekBar);
+        editSave = rootView.findViewById(R.id.editSaveButton);
+        editReset = rootView.findViewById(R.id.editResetButton);
+        editQuit = rootView.findViewById(R.id.editQuitButton);
+        super.onViewCreated();
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -81,7 +70,7 @@ public class CustomConFragment extends FullConFragment{
             layoutContainer.clearSelect();
             int currentLayout = Config.getCurrentLayout();
             if(currentLayout == 3){
-                new InputDialog(requireActivity(), MainActivity.getHandler()).show();
+                new InputDialog(context, MainActivity.getHandler()).show();
             }else {
                 setEditMode(false);
                 Config.modifyCustomLayoutData(getNowLayoutData(""),currentLayout);
@@ -102,8 +91,6 @@ public class CustomConFragment extends FullConFragment{
             layoutContainer.resizeView((((AppCompatSeekBar) view).getProgress() - 50) * 0.002f);
             return false;
         });
-
-        readCustomLayout(layout);
     }
 
     public void setEditMode(boolean isOpen){
