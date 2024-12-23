@@ -40,7 +40,6 @@ public class Controller {
     public Controller(byte deviceModel){
         information = new ControllerInformation((byte) 0, deviceModel, "000000000000");
         buttons = new byte[20];
-        Arrays.fill(buttons, LEFT_STICK_X, RIGHT_STICK_Y+1, (byte) 128);
         timestamp = 0L;
         sensor = new float[6];
         touches = new Touch[]{new Touch(true), new Touch(false)};
