@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import top.decided.emotion.R;
+import top.decided.emotion.utils.Gyro;
 
 public class Config {
 
@@ -20,7 +21,7 @@ public class Config {
     private static String listenIP;
     private static boolean abxySwitch, touchpadSwitch, vibration, buttonVibration;
     private static int currentLayout;
-    private static byte gyroDirection = 0;
+    private static Gyro.GyroDirection gyroDirection = Gyro.GyroDirection.FULL_DEFAULT;
     private static SharedPreferences sharedPreferences;
     private static SharedPreferences.Editor editor;
     private static Vibrator vibrator;
@@ -102,11 +103,11 @@ public class Config {
         editor.apply();
     }
 
-    public static byte getGyroDirection() {
+    public static Gyro.GyroDirection getGyroDirection() {
         return gyroDirection;
     }
 
-    public static void setGyroDirection(byte gyroDirection) {
+    public static void setGyroDirection(Gyro.GyroDirection gyroDirection) {
         Config.gyroDirection = gyroDirection;
     }
 

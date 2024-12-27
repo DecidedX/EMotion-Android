@@ -7,6 +7,7 @@ import android.hardware.SensorEvent;
 import top.decided.emotion.cemuhook.Controller;
 import top.decided.emotion.config.Config;
 import top.decided.emotion.service.ConnectionService;
+import top.decided.emotion.utils.Gyro;
 
 public class SensorChangeEventListener implements android.hardware.SensorEventListener {
 
@@ -14,48 +15,22 @@ public class SensorChangeEventListener implements android.hardware.SensorEventLi
     @Override
     public void onSensorChanged(SensorEvent event) {
         Controller controller = ConnectionService.getInstance().getController();
-        float[] values = new float[3];
+        Gyro.GyroDirection direction = Gyro.GyroDirection.FULL_DEFAULT;
+        switch (Config.getCurrentLayout()){
+            case 0:
+                direction = Gyro.GyroDirection.LEFT_DEFAULT;
+                break;
+            case 1:
+                direction = Gyro.GyroDirection.RIGHT_DEFAULT;
+                break;
+        }
+        direction = Config.getGyroDirection() == Gyro.GyroDirection.FULL_DEFAULT ? direction : Config.getGyroDirection();
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER){
-            switch (Config.getGyroDirection()){
-                case 0:
-                    values[0] = event.values[1] / 9.81F;
-                    values[1] = -event.values[2] / 9.81F;
-                    values[2] = event.values[0] / 9.81F;
-                    break;
-                case 1:
-                    values[0] = event.values[2] / 9.81F;
-                    values[1] = -event.values[0] / 9.81F;
-                    values[2] = event.values[1] / 9.81F;
-                    break;
-                case 2:
-                    values[0] = -event.values[2] / 9.81F;
-                    values[1] = event.values[0] / 9.81F;
-                    values[2] = event.values[1] / 9.81F;
-                    break;
-            }
-
-            controller.updateAccSensor(values);
+            controller.updateAccSensor(Gyro.processAcc(event.values, direction));
             long nanoTime = System.nanoTime();
             controller.setTimestamp(System.currentTimeMillis() * 1000 + (nanoTime - nanoTime / 1000000 * 1000000) / 1000);
         }else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE){
-            switch (Config.getGyroDirection()){
-                case 0:
-                    values[0] = (float) - Math.toDegrees(event.values[1]);
-                    values[1] = (float) - Math.toDegrees(event.values[2]);
-                    values[2] = (float) Math.toDegrees(event.values[0]);
-                    break;
-                case 1:
-                    values[0] = (float) - Math.toDegrees(event.values[2]);
-                    values[1] = (float) - Math.toDegrees(event.values[0]);
-                    values[2] = (float) Math.toDegrees(event.values[1]);
-                    break;
-                case 2:
-                    values[0] = (float) Math.toDegrees(event.values[2]);
-                    values[1] = (float) Math.toDegrees(event.values[0]);
-                    values[2] = (float) Math.toDegrees(event.values[1]);
-                    break;
-            }
-            controller.updateGyroSensor(values);
+            controller.updateGyroSensor(Gyro.processGyro(event.values, direction));
         }
     }
 

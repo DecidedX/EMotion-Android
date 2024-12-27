@@ -32,6 +32,7 @@ import top.decided.emotion.R;
 import top.decided.emotion.config.Config;
 import top.decided.emotion.listener.SwitchCheckedChangeListener;
 import top.decided.emotion.service.ConnectionService;
+import top.decided.emotion.utils.Gyro;
 import top.decided.emotion.utils.HandlerCaseType;
 import top.decided.emotion.utils.PermissionApply;
 
@@ -101,7 +102,7 @@ public class SettingDialog extends Dialog {
 
         gyroDirectionGroup.setOnCheckedChangeListener((group, checkedId) -> {
             RadioButton direction = findViewById(checkedId);
-            Config.setGyroDirection(Byte.parseByte((String) direction.getTag()));
+            Config.setGyroDirection(Gyro.GyroDirection.valueOf((String) direction.getTag()));
         });
 
         floatingSwitch.setOnCheckedChangeListener(new SwitchCheckedChangeListener(HandlerCaseType.SET_FLOATING, null, handler, bool -> {
